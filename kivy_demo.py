@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = "Patrick Aselin"
-__email__ = "patrick.aselin@gmail.com"
 __status__ = "Development"
 
+# necessary library imports
 import os
 #os.environ['KIVY_BCM_DISPMANX_ID'] = '3' # tells Kivy which display to work with (may need to be changed for tablet interface)
 import RPi.GPIO as GPIO
@@ -18,6 +17,8 @@ import multiprocessing
 import sys
 import threading
 import traceback
+
+# kivy library imports
 from kivy.app import App
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.floatlayout import FloatLayout
@@ -299,8 +300,6 @@ class MuralApp(App):
             #Color(0.851, 0.851, 0.851, 1)
             Color(0.094, 0.141, 0.765, 1)
             self.rect = Rectangle(size=root.size, pos=root.pos)
-        #with root.canvas.:
-        #    Line(points=[100, 100, 200, 100, 100, 200], width=10)
 
         return root
 
