@@ -51,6 +51,7 @@ GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button
 
 # start pygame to play audio files
 pygame.init()
+
 # initialize audio file
 audio = pygame.mixer.Sound("/home/pi/Patrick/jfk.wav")
 
@@ -183,6 +184,9 @@ def servo_stepper2(START_X, START_Y, TARGET_X, TARGET_Y):
     return position_x, position_y
 
 def thread_demo():
+    '''
+    Function to run the threading demo
+    '''
     count = 0
     while count < 40:
         new_x = random.randint(600, 1400)
@@ -211,6 +215,7 @@ class RootWidget(FloatLayout):
     Y_coord = NumericProperty(initial_y)
     #X_next = NumericProperty(0)
     #Y_next = NumericProperty(0)
+    
     thread = multiprocessing.Process(target = thread_demo)
     first_run = True
     
