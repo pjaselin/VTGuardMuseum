@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-__author__ = "Patrick Aselin"
-__email__ = "patrick.aselin@gmail.com"
 __status__ = "Development"
 '''
 Customer: Vermont National Guard Museum and Library
