@@ -53,7 +53,7 @@ GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button
 pygame.init()
 
 # initialize audio file -> get and split audio file
-audio = pygame.mixer.Sound("/home/pi/Patrick/jfk.wav")
+audio = pygame.mixer.Sound("/home/pi/museum/jfk.wav")
 
 # start pigpio instance 
 servo = pigpio.pi()
