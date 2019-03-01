@@ -7,6 +7,9 @@ As this is still in development, there are several key issues that need to be re
 
 - thread management
 
+## Notes
+ - audio files are loaded into memory with pygame, but it might be better to use subprocess calls
+
 ## How to run Kivy app:
  - SSH into RPi via second computer.
  - Create a new directory: mkdir development
