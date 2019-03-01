@@ -52,8 +52,13 @@ GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button
 # start pygame to play audio files
 pygame.init()
 
-# initialize audio file -> get and split audio file
-audio = pygame.mixer.Sound("/home/pi/museum/jfk.wav")
+# initialize audio files
+full_audio = pygame.mixer.Sound("./audiofiles/fdr_full.wav")
+sample0 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_0.wav")
+sample1 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_1.wav")
+sample2 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_2.wav")
+sample3 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_3.wav")
+sample4 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_4.wav")
 
 # start pigpio instance 
 servo = pigpio.pi()
