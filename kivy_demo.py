@@ -237,7 +237,7 @@ class RootWidget(FloatLayout):
             self.thread.start()
             self.first_run = False
             
-        Full_Demo = Button(text="Full Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .85},font_size='35sp')
+        Full_Demo = Button(text="Full Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .85},font_size='25sp')
         Full_Demo.bind(on_press=Full_Demo_callback)
         self.add_widget(Full_Demo)
         
@@ -252,7 +252,7 @@ class RootWidget(FloatLayout):
             self.X_coord = initial_x
             self.Y_coord = initial_y
             
-        Stop_Full_Demo = Button(text="Stop Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .6},font_size='35sp')
+        Stop_Full_Demo = Button(text="Stop Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .6},font_size='25sp')
         Stop_Full_Demo.bind(on_press=Stop_Full_Demo_callback)
         self.add_widget(Stop_Full_Demo)
         
