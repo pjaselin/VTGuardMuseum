@@ -229,9 +229,9 @@ class RootWidget(FloatLayout):
                 self.thread.terminate()
                 self.thread = multiprocessing.Process(target = thread_demo)
                 print('')
-            audio.stop()
+            full_audio.stop()
             GPIO.output(GPIO_LASER, 0)
-            audio.play()
+            full_audio.play()
             
             # sequence for laser and servos
             self.thread.start()
@@ -244,7 +244,7 @@ class RootWidget(FloatLayout):
         def Stop_Full_Demo_callback(instance):
             if not self.first_run:
                 self.thread.terminate()
-            audio.stop()
+            full_audio.stop()
             GPIO.output(GPIO_LASER, 0)
             
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, initial_x)
@@ -287,7 +287,7 @@ if __name__ == '__main__':
     
     except KeyboardInterrupt:
         # stop audio
-        audio.stop()
+        full_audio.stop()
         
         # reset and zero pwm
         current_x, current_y = servo_stepper(initial_x, initial_y)
