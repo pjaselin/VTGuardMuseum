@@ -8,6 +8,7 @@ As this is still in development, there are several key issues that need to be re
 - thread management
 
 ## How to run Kivy app:
+ - SSH into RPi via second computer.
  - Create a new directory: mkdir development
  - Enter this directory: cd directory
  - Clone repository: git clone https://github.com/pjaselin/VTGuardMuseum.git
