@@ -16,7 +16,7 @@ As this is still in development, there are several key issues that need to be re
 ## How to run Kivy app:
  - SSH into RPi via second computer.
  - Create a new directory: mkdir development
- - Enter this directory: cd directory
+ - Enter this directory: cd development
  - Clone repository: git clone https://github.com/pjaselin/VTGuardMuseum.git
  - Enter cloned repo: cd VTGuardMuseum
  - Run Kivy app with: python3 kivy_demo.py
