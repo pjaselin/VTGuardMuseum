@@ -3,19 +3,15 @@
 __status__ = "Development"
 
 # necessary library imports
-import os
+import os, sys
+os.environ['KIVY_GL_BACKEND'] = 'gl'
 #os.environ['KIVY_BCM_DISPMANX_ID'] = '3' # tells Kivy which display to work with (may need to be changed for tablet interface)
 import RPi.GPIO as GPIO
-import time
+import time, random
 import pigpio
-import subprocess
-import pygame
+import subprocess, threading, multiprocessing
+import pygame, pigpio
 from math import copysign
-import random
-import threading
-import multiprocessing
-import sys
-import threading
 import traceback
 
 # kivy library imports
@@ -33,6 +29,7 @@ from kivy.core.text import Label as CoreLabel
 from kivy.event import EventDispatcher
 from kivy.uix.slider import Slider
 
+
 # start pigpio daemon
 subprocess.call("sudo pigpiod &", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -47,7 +44,7 @@ servo_pause = 0.01
 # GPIO setup
 GPIO.setmode(GPIO.BCM) # set pin numbering
 GPIO.setup(GPIO_LASER, GPIO.OUT) # laser control setup
-GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button setup
+#GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button setup
 
 # start pygame to play audio files
 pygame.init()
@@ -89,7 +86,7 @@ def servo_stepper(TARGET_X, TARGET_Y):
     # copy of current coordinates
     position_x = current_x
     position_y = current_y
-    print("target:", TARGET_X, TARGET_Y)
+    #print("target:", TARGET_X, TARGET_Y)
     # get delta between target and current positions
     delta_x = TARGET_X - position_x
     delta_y = TARGET_Y - position_y
@@ -109,7 +106,7 @@ def servo_stepper(TARGET_X, TARGET_Y):
             time.sleep(servo_pause)
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
         time.sleep(servo_pause)
-        print("temp x:", position_x, "temp y:", position_y)
+        #print("temp x:", position_x, "temp y:", position_y)
         
         # update deltas
         delta_x = TARGET_X - position_x
@@ -145,7 +142,7 @@ def servo_stepper2(START_X, START_Y, TARGET_X, TARGET_Y):
     # copy of current coordinates
     position_x = START_X
     position_y = START_Y
-    print("target:", TARGET_X, TARGET_Y)
+    #print("target:", TARGET_X, TARGET_Y)
     # get delta between target and current positions
     delta_x = TARGET_X - position_x
     delta_y = TARGET_Y - position_y
@@ -165,7 +162,7 @@ def servo_stepper2(START_X, START_Y, TARGET_X, TARGET_Y):
             time.sleep(servo_pause)
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
         time.sleep(servo_pause)
-        print("temp x:", position_x, "temp y:", position_y)
+        #print("temp x:", position_x, "temp y:", position_y)
         
         # update deltas
         delta_x = TARGET_X - position_x
@@ -226,12 +223,12 @@ class RootWidget(FloatLayout):
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
-        
+        print('yes')
         def Full_Demo_callback(instance):
             if not self.first_run:
                 self.thread.terminate()
                 self.thread = multiprocessing.Process(target = thread_demo)
-
+                print('')
             audio.stop()
             GPIO.output(GPIO_LASER, 0)
             audio.play()
@@ -259,42 +256,6 @@ class RootWidget(FloatLayout):
         Stop_Full_Demo.bind(on_press=Stop_Full_Demo_callback)
         self.add_widget(Stop_Full_Demo)
         
-        ## Laser On/Off Switch
-        self.add_widget(Label(text="Laser Power", size_hint=(.15, .15), pos_hint={'center_x': .4, 'center_y': .92}, font_size='23sp'))
-        def callback_heat1(instance, value):
-            if value == True:
-                # when pressed, turn laser on
-                GPIO.output(GPIO_LASER, 1)
-            else:
-                # when depressed turn laser off
-                GPIO.output(GPIO_LASER, 0)
-        switch_heat1 = Switch(size_hint=(.15, .15), pos_hint={'center_x': .4, 'center_y': .87})
-        switch_heat1.bind(active=callback_heat1)
-        self.add_widget(switch_heat1)
-        
-        slider_x = Slider(min = 540, max = 2300, value = 1100, step = 1,
-                          pos_hint={'center_x': .55, 'center_y': .4},
-                          size_hint=(.4, .4),
-                          value_track=True, value_track_color=[1, 0, 0, 1])        
-        slider_y = Slider(min = 550, max = 1750, value = 800, step = 1,
-                          orientation = "vertical",
-                          pos_hint={'center_x': .85, 'center_y': .4},
-                          size_hint=(.5, .5),
-                          value_track=True, value_track_color=[1, 0, 0, 1],
-                          sensitivity = "handle")
-        def update_x(instance, value):
-            temp_x, temp_y = servo_stepper2(self.X_coord, self.Y_coord, slider_x.value, slider_y.value)
-            self.X_coord = temp_x
-            self.Y_coord = temp_y
-        slider_x.bind(on_touch_up = update_x)
-        self.add_widget(slider_x)
-        def update_y(instance, value):
-            temp_x, temp_y = servo_stepper2(self.X_coord, self.Y_coord, slider_x.value, slider_y.value)
-            self.X_coord = temp_x
-            self.Y_coord = temp_y
-        slider_y.bind(on_touch_up = update_y)
-        self.add_widget(slider_y)
-
 
 class MuralApp(App):
     '''
@@ -323,7 +284,7 @@ if __name__ == '__main__':
     # start the app
     try:
         MuralApp().run()
-        
+    
     except KeyboardInterrupt:
         # stop audio
         audio.stop()
