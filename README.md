@@ -5,10 +5,11 @@ Repository to store and share development scripts as we develop interactive disp
 ## Tasks
 As this is still in development, there are several key issues that need to be resolved. Chief among these is the desire to be able to terminate a sequence at any time. To achieve this, an audio file needs to be launched and terminated in a thread.
 
-- thread management
+ - thread management via threading.Threading
 
 ## Notes
  - audio files are loaded into memory with pygame, but it might be better to use subprocess calls
+ - move servo_stepper to class for easier storage of current position
 
 ## How to run Kivy app:
  - SSH into RPi via second computer.
