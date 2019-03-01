@@ -252,7 +252,14 @@ class RootWidget(FloatLayout):
         Stop_Full_Demo.bind(on_press=Stop_Full_Demo_callback)
         self.add_widget(Stop_Full_Demo)
         
+        
         # add segments below
+        
+        def OffSwitch_callback(instance):
+            App.get_running_app().stop()
+        OffSwitch = Button(text="Off",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .35},font_size='25sp')
+        OffSwitch.bind(on_press=OffSwitch_callback)
+        self.add_widget(OffSwitch)
 
 class MuralApp(App):
     '''
