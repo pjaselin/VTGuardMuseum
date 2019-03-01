@@ -10,6 +10,8 @@ As this is still in development, there are several key issues that need to be re
 ## Notes
  - audio files are loaded into memory with pygame, but it might be better to use subprocess calls
  - move servo_stepper to class for easier storage of current position
+ - want to make app executable: https://stackoverflow.com/questions/27494758/how-do-i-make-a-python-script-executable
+ - possibly also launch at start: https://www.raspberrypi.org/forums/viewtopic.php?t=125129
 
 ## How to run Kivy app:
  - SSH into RPi via second computer.
