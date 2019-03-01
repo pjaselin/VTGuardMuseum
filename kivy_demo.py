@@ -118,7 +118,6 @@ def servo_stepper(TARGET_X, TARGET_Y):
     # when close enough, take remainder step
     position_x += delta_x
     position_y += delta_y
-    print("new position:", position_x, position_y)
     servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
     servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
     
@@ -174,7 +173,6 @@ def servo_stepper2(START_X, START_Y, TARGET_X, TARGET_Y):
     # when close enough, take remainder step
     position_x += delta_x
     position_y += delta_y
-    print("new position:", position_x, position_y)
     servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
     servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
     
@@ -223,12 +221,10 @@ class RootWidget(FloatLayout):
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
-        print('yes')
         def Full_Demo_callback(instance):
             if not self.first_run:
                 self.thread.terminate()
                 self.thread = multiprocessing.Process(target = thread_demo)
-                print('')
             full_audio.stop()
             GPIO.output(GPIO_LASER, 0)
             full_audio.play()
@@ -256,6 +252,7 @@ class RootWidget(FloatLayout):
         Stop_Full_Demo.bind(on_press=Stop_Full_Demo_callback)
         self.add_widget(Stop_Full_Demo)
         
+        # add segments below
 
 class MuralApp(App):
     '''
