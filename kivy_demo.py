@@ -33,7 +33,7 @@ from kivy.uix.slider import Slider
 # start pigpio daemon
 subprocess.call("sudo pigpiod &", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# define GPIO pins as variables for readability        
+# define GPIO pins as variables for readability
 GPIO_LASER = 27
 GPIO_SERVOPIN_X = 17 # 540 (right)-2300 (left)
 GPIO_SERVOPIN_Y = 4 #550-1750
@@ -51,13 +51,13 @@ pygame.init()
 
 # initialize audio files
 full_audio = pygame.mixer.Sound("./audiofiles/fdr_full.wav")
-sample0 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_0.wav")
-sample1 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_1.wav")
-sample2 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_2.wav")
-sample3 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_3.wav")
-sample4 = pygame.mixer.Sound("/home/pi/VTGuard/audiofiles/sample_4.wav")
+sample0 = pygame.mixer.Sound("./audiofiles/sample_0.wav")
+sample1 = pygame.mixer.Sound("./audiofiles/sample_1.wav")
+sample2 = pygame.mixer.Sound("./audiofiles/sample_2.wav")
+sample3 = pygame.mixer.Sound("./audiofiles/sample_3.wav")
+sample4 = pygame.mixer.Sound("./audiofiles/sample_4.wav")
 
-# start pigpio instance 
+# start pigpio instance
 servo = pigpio.pi()
 
 # define and set initial orientation
@@ -90,16 +90,16 @@ def servo_stepper(TARGET_X, TARGET_Y):
     # get delta between target and current positions
     delta_x = TARGET_X - position_x
     delta_y = TARGET_Y - position_y
-    
+
     # loop to step from current to target positions
     while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length:
         if abs(delta_x) > servo_step_length:
-            position_x += copysign(servo_step_length, delta_x) 
+            position_x += copysign(servo_step_length, delta_x)
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
             time.sleep(servo_pause)
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
         time.sleep(servo_pause)
-        
+
         if abs(delta_y) > servo_step_length:
             position_y += copysign(servo_step_length, delta_y)
             servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
@@ -221,7 +221,7 @@ class RootWidget(FloatLayout):
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
-        def Full_Demo_callback(instance):
+        def main_presentation_callback(instance):
             if not self.first_run:
                 self.thread.terminate()
                 self.thread = multiprocessing.Process(target = thread_demo)
@@ -233,10 +233,23 @@ class RootWidget(FloatLayout):
             self.thread.start()
             self.first_run = False
             
-        Full_Demo = Button(text="Full Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .85},font_size='25sp')
-        Full_Demo.bind(on_press=Full_Demo_callback)
-        self.add_widget(Full_Demo)
-        
+        main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
+        main_presentation.bind(on_press=main_presentation_callback)
+        self.add_widget(main_presentation)
+
+        option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
+        #Full_Demo.bind(on_press=Full_Demo_callback)
+        self.add_widget(option1)
+
+        option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
+        #Full_Demo.bind(on_press=Full_Demo_callback)
+        self.add_widget(option2)
+       
+        option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
+        #Full_Demo.bind(on_press=Full_Demo_callback)
+        self.add_widget(option3)
+
+        '''
         def Stop_Full_Demo_callback(instance):
             if not self.first_run:
                 self.thread.terminate()
@@ -260,6 +273,7 @@ class RootWidget(FloatLayout):
         OffSwitch = Button(text="Off",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .35},font_size='25sp')
         OffSwitch.bind(on_press=OffSwitch_callback)
         self.add_widget(OffSwitch)
+        '''
 
 class MuralApp(App):
     '''
@@ -273,7 +287,7 @@ class MuralApp(App):
         with root.canvas.before:
             # RGBA coloring scheme
             #Color(0.851, 0.851, 0.851, 1)
-            Color(0.094, 0.141, 0.765, 1)
+            Color(140/255, 150/255, 150/255, 1)
             self.rect = Rectangle(size=root.size, pos=root.pos)
 
         return root
