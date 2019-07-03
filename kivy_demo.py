@@ -13,7 +13,8 @@ import subprocess, threading, multiprocessing
 import pygame, pigpio
 from math import copysign
 import traceback
-
+#from datetime import datetime
+import threading
 # kivy library imports
 from kivy.app import App
 from kivy.graphics import Color, Rectangle, Line
@@ -92,115 +93,7 @@ coordinates_option3 = [(853, 758), (607, 750), (704, 693), (1269, 592), (1136, 7
 timestamps_option3 = [13, 24, 36, 51, 65, 75, 87, 102, 115, 130, 142, 154, 169, 183, 193, 208, 222, 232, 244, 255]
 ###########################
 
-def servo_stepper(TARGET_X, TARGET_Y):
-    '''
-    Input:
-        TARGET_X: target pulsewidth x-axis
-        TARGET_Y: target pulsewidth y-axis
-    Output:
-        Limits the servo movement to maximum increments of 50 from current
-        location to target x,y location. This serves to quiet the noise
-        produced by servo movement.
-    '''
-    # copy of current coordinates
-    position_x = current_x
-    position_y = current_y
-    #print("target:", TARGET_X, TARGET_Y)
-    # get delta between target and current positions
-    delta_x = TARGET_X - position_x
-    delta_y = TARGET_Y - position_y
 
-    # loop to step from current to target positions
-    while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length:
-        if abs(delta_x) > servo_step_length:
-            position_x += copysign(servo_step_length, delta_x)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
-            time.sleep(servo_pause)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-        time.sleep(servo_pause)
-
-        if abs(delta_y) > servo_step_length:
-            position_y += copysign(servo_step_length, delta_y)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
-            time.sleep(servo_pause)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
-        time.sleep(servo_pause)
-        #print("temp x:", position_x, "temp y:", position_y)
-        
-        # update deltas
-        delta_x = TARGET_X - position_x
-        delta_y = TARGET_Y - position_y
-        
-        # very brief pause
-        time.sleep(servo_pause)
-    
-    # when close enough, take remainder step
-    position_x += delta_x
-    position_y += delta_y
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
-    
-    # zero pwm's
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
-    
-    # return new positions
-    return position_x, position_y
-
-def servo_stepper2(START_X, START_Y, TARGET_X, TARGET_Y):
-    '''
-    Input:
-        TARGET_X: target pulsewidth x-axis
-        TARGET_Y: target pulsewidth y-axis
-    Output:
-        Limits the servo movement to maximum increments of 50 from current
-        location to target x,y location. This serves to quiet the noise
-        produced by servo movement.
-    '''
-    # copy of current coordinates
-    position_x = START_X
-    position_y = START_Y
-    #print("target:", TARGET_X, TARGET_Y)
-    # get delta between target and current positions
-    delta_x = TARGET_X - position_x
-    delta_y = TARGET_Y - position_y
-    
-    # loop to step from current to target positions
-    while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length:
-        if abs(delta_x) > servo_step_length:
-            position_x += copysign(servo_step_length, delta_x) 
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
-            time.sleep(servo_pause)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-        time.sleep(servo_pause)
-        
-        if abs(delta_y) > servo_step_length:
-            position_y += copysign(servo_step_length, delta_y)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
-            time.sleep(servo_pause)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
-        time.sleep(servo_pause)
-        #print("temp x:", position_x, "temp y:", position_y)
-        
-        # update deltas
-        delta_x = TARGET_X - position_x
-        delta_y = TARGET_Y - position_y
-        
-        # very brief pause
-        time.sleep(servo_pause)
-    
-    # when close enough, take remainder step
-    position_x += delta_x
-    position_y += delta_y
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, position_x)
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, position_y)
-    
-    # zero pwm's
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
-    
-    # return new positions
-    return position_x, position_y
 
 def thread_demo():
     '''
@@ -227,6 +120,16 @@ def thread_demo():
         time.sleep(random.randint(2,6))
     current_x, current_y = servo_stepper(initial_x, initial_y)
 
+class StoppableThread(threading.Thread):
+    def __init(self)__(self):
+        super(StoppableThread, self).__init__()
+        self._stop_event = threading.Event()
+    
+    def stop(self):
+        self._stop_event.set()
+    
+    def stopped(self):
+        return self._stop_event.is_set()
 
 
 class RootWidget(FloatLayout):
@@ -237,6 +140,7 @@ class RootWidget(FloatLayout):
     
     thread = multiprocessing.Process(target = thread_demo)
     first_run = True
+    stop_playing = True
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
@@ -252,7 +156,7 @@ class RootWidget(FloatLayout):
             self.thread.start()
             self.first_run = False
         
-        def servo_stepper(TARGET_X, TARGET_Y):
+        def servo_stepper(self, TARGET_X, TARGET_Y):
             '''
             Input:
                 TARGET_X: target pulsewidth x-axis
@@ -306,7 +210,18 @@ class RootWidget(FloatLayout):
     
             # return new positions
             #return position_x, position_y
+        def example_callback(self, input_coords, input_timestamps):
+            # loop through coords at timestamps
+            first_timestamp = time.time()
+            for i_coords in range(len(input_coords)):
+                while first_timestamp - int(time.time()) < input_timestamps[i]:
+                    # wait until we reach the target time
+                    time.sleep(0.1)
+                # then move the laser
+                servo_stepper(input_coords[i][0], input_coords[i][1])
         
+        def example_callback
+                
         
         main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
         main_presentation.bind(on_press=main_presentation_callback)
