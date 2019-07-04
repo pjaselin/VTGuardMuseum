@@ -21,3 +21,7 @@ As this is still in development, there are several key issues that need to be re
  - Enter cloned repo: cd VTGuardMuseum
  - Run Kivy app with: python3 kivy_demo.py
  - Terminate app with: CTRL+c
+
+## For Raspberry Pi
+Please be sure to also make the edits noted at the bottom of this page to use the RPi touchscreen with this Kivy app:
+https://kivy.org/doc/stable/installation/installation-rpi.html
