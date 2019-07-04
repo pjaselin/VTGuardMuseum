@@ -51,12 +51,20 @@ GPIO.setup(GPIO_LASER, GPIO.OUT) # laser control setup
 pygame.init()
 
 # initialize audio files
-full_audio = pygame.mixer.Sound("./audiofiles/fdr_full.wav")
-sample0 = pygame.mixer.Sound("./audiofiles/sample_0.wav")
-sample1 = pygame.mixer.Sound("./audiofiles/sample_1.wav")
-sample2 = pygame.mixer.Sound("./audiofiles/sample_2.wav")
-sample3 = pygame.mixer.Sound("./audiofiles/sample_3.wav")
-sample4 = pygame.mixer.Sound("./audiofiles/sample_4.wav")
+audiofile_dir = "./audiofiles/"
+audiofile_list = os.listdir(audiofile_dir)
+audiofile_list.sort()
+audiofile_list.pop()
+del audiofile_list[0]
+audiofiles = []
+for audiofile in audiofile_list:
+    audiofiles.append(pygame.mixer.Sound(audiofile_dir+audiofile))
+#full_audio = pygame.mixer.Sound("./audiofiles/fdr_full.wav")
+#sample0 = pygame.mixer.Sound("./audiofiles/sample_0.wav")
+#sample1 = pygame.mixer.Sound("./audiofiles/sample_1.wav")
+#sample2 = pygame.mixer.Sound("./audiofiles/sample_2.wav")
+#sample3 = pygame.mixer.Sound("./audiofiles/sample_3.wav")
+#sample4 = pygame.mixer.Sound("./audiofiles/sample_4.wav")
 
 # start pigpio instance
 servo = pigpio.pi()
@@ -94,176 +102,167 @@ timestamps_option3 = [13, 24, 36, 51, 65, 75, 87, 102, 115, 130, 142, 154, 169, 
 ###########################
 
 
-
-def thread_demo():
-    '''
-    Function to run the threading demo
-    '''
-    count = 0
-    while count < 40:
-        new_x = random.randint(600, 1400)
-        new_y = random.randint(550,900)
-        
-        coinflip = random.randint(0,2)
-        if coinflip == 1:
-            GPIO.output(GPIO_LASER, 1)
-        
-        current_x, current_y = servo_stepper(new_x, new_y)
-                
-        # turn on/off laser
-        GPIO.output(GPIO_LASER, 1)
-        time.sleep(random.uniform(3.0,5.0))
-        GPIO.output(GPIO_LASER, 0)
-                
-        # add to counter
-        count += 1
-        time.sleep(random.randint(2,6))
-    current_x, current_y = servo_stepper(initial_x, initial_y)
-
-class StoppableThread(threading.Thread):
-    def __init(self)__(self):
-        super(StoppableThread, self).__init__()
-        self._stop_event = threading.Event()
-    
-    def stop(self):
-        self._stop_event.set()
-    
-    def stopped(self):
-        return self._stop_event.is_set()
-
-
 class RootWidget(FloatLayout):
     X_coord = NumericProperty(initial_x)
     Y_coord = NumericProperty(initial_y)
     #X_next = NumericProperty(0)
     #Y_next = NumericProperty(0)
     
-    thread = multiprocessing.Process(target = thread_demo)
     first_run = True
-    stop_playing = True
+    stop_playing = False
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
-        def main_presentation_callback(instance):
-            if not self.first_run:
-                self.thread.terminate()
-                self.thread = multiprocessing.Process(target = thread_demo)
-            full_audio.stop()
-            GPIO.output(GPIO_LASER, 0)
-            full_audio.play()
-            
-            # sequence for laser and servos
-            self.thread.start()
-            self.first_run = False
         
-        def servo_stepper(self, TARGET_X, TARGET_Y):
-            '''
-            Input:
-                TARGET_X: target pulsewidth x-axis
-                TARGET_Y: target pulsewidth y-axis
-            Output:
-                Limits the servo movement to maximum increments of 50 from current
-                location to target x,y location. This is to reduce the noise
-                produced by servo movement.
-            '''
-            # copy of current coordinates
-            #position_x = current_x
-            #position_y = current_y
-            #print("target:", TARGET_X, TARGET_Y)
-            # get delta between target and current positions
+    def servo_stepper(self, TARGET_X, TARGET_Y):
+        '''
+        Input:
+            TARGET_X: target pulsewidth x-axis
+            TARGET_Y: target pulsewidth y-axis
+        Output:
+            Limits the servo movement to maximum increments of 50 from current
+            location to target x,y location. This is to reduce the noise
+            produced by servo movement.
+        '''
+        # copy of current coordinates
+        #position_x = current_x
+        #position_y = current_y
+        #print("target:", TARGET_X, TARGET_Y)
+        # get delta between target and current positions
+        delta_x = TARGET_X - self.X_coord
+        delta_y = TARGET_Y - self.Y_coord
+        # loop to step from current to target positions
+        while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length or self.stop_playing:
+            if self.stop_playing:
+                return
+            if abs(delta_x) > servo_step_length:
+                self.X_coord += copysign(servo_step_length, delta_x)
+                servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
+                time.sleep(servo_pause)
+                servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
+                time.sleep(servo_pause)
+
+            if abs(delta_y) > servo_step_length:
+                self.Y_coord += copysign(servo_step_length, delta_y)
+                servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, self.Y_coord)
+                time.sleep(servo_pause)
+                servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
+                time.sleep(servo_pause)
+            #print("temp x:", position_x, "temp y:", position_y)
+    
+            # update deltas
             delta_x = TARGET_X - self.X_coord
             delta_y = TARGET_Y - self.Y_coord
-
-            # loop to step from current to target positions
-            while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length:
-                if abs(delta_x) > servo_step_length:
-                    self.X_coord += copysign(servo_step_length, delta_x)
-                    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
-                    time.sleep(servo_pause)
-                    servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-                    time.sleep(servo_pause)
-
-                if abs(delta_y) > servo_step_length:
-                    self.Y_coord += copysign(servo_step_length, delta_y)
-                    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, self.Y_coord)
-                    time.sleep(servo_pause)
-                    servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
-                    time.sleep(servo_pause)
-                #print("temp x:", position_x, "temp y:", position_y)
         
-                # update deltas
-                delta_x = TARGET_X - self.X_coord
-                delta_y = TARGET_Y - self.Y_coord
-        
-                # very brief pause
-                time.sleep(servo_pause)
+            # very brief pause
+            time.sleep(servo_pause)
     
-            # when close enough, take remainder step
-            self.X_coord += delta_x
-            self.Y_coord += delta_y
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, self.Y_coord)
+        # when close enough, take remainder step
+        self.X_coord += delta_x
+        self.Y_coord += delta_y
+        servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
+        servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, self.Y_coord)
     
-            # zero pwm's
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
+        # zero pwm's
+        servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
+        servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
     
-            # return new positions
-            #return position_x, position_y
-        def example_callback(self, input_coords, input_timestamps):
-            # loop through coords at timestamps
-            first_timestamp = time.time()
-            for i_coords in range(len(input_coords)):
-                while first_timestamp - int(time.time()) < input_timestamps[i]:
-                    # wait until we reach the target time
-                    time.sleep(0.1)
-                # then move the laser
-                servo_stepper(input_coords[i][0], input_coords[i][1])
-        
-        def example_callback
-                
-        
-        main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
-        main_presentation.bind(on_press=main_presentation_callback)
-        self.add_widget(main_presentation)
-
-        option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
-        #option1.bind(on_press=option1_callback)
-        self.add_widget(option1)
-
-        option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
-        #option2.bind(on_press=option2_callback)
-        self.add_widget(option2)
-       
-        option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
-        #option3.bind(on_press=option3_callback)
-        self.add_widget(option3)
-
-        '''
-        def Stop_Full_Demo_callback(instance):
-            if not self.first_run:
-                self.thread.terminate()
-            full_audio.stop()
+        # return new positions
+        #return position_x, position_y
+    def example_callback(self, input_coords, input_timestamps):
+        # loop through coords at timestamps
+        first_timestamp = time.time()
+        for i_coords in range(len(input_coords)):
+            while int(time.time()) - first_timestamp < input_timestamps[i_coords] or self.stop_playing:
+                if self.stop_playing:
+                    return
+                # wait until we reach the target time
+                time.sleep(0.1)
+            # then move the laser
             GPIO.output(GPIO_LASER, 0)
-            
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, initial_x)
-            servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, initial_y)
-            self.X_coord = initial_x
-            self.Y_coord = initial_y
-            
-        Stop_Full_Demo = Button(text="Stop Demo",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .6},font_size='25sp')
-        Stop_Full_Demo.bind(on_press=Stop_Full_Demo_callback)
-        self.add_widget(Stop_Full_Demo)
+            servo_stepper(input_coords[i_coords][0], input_coords[i_coords][1])
+            GPIO.output(GPIO_LASER, 1)
+    
+    def main_thread(self):
+        self.stop_playing = False
+        self.thread = threading.Thread(target = self.step_time_control,
+                                       args = (coordinates_main, timestamps_main))
+        self.thread.start()
+    def option1_thread(self):
+        self.stop_playing = False
+        self.thread = threading.Thread(target = self.step_time_control,
+                                       args = (coordinates_option1, timestamps_option1))
+        self.thread.start()
+    def option2_thread(self):
+        self.stop_playing = False
+        self.thread = threading.Thread(target = self.step_time_control,
+                                       args = (coordinates_option2, timestamps_option2))
+        self.thread.start()
+    def option3_thread(self):
+        self.stop_playing = False
+        self.thread = threading.Thread(target = self.step_time_control,
+                                       args = (coordinates_option3, timestamps_option3))
+        self.thread.start()
+    def stop_laser(self):
+        self.stop_playing = True
+        self.thrad.join()
+        GPIO.output(GPIO_LASER, 0)
+                
+    def main_presentation_callback(instance):
+        self.stop_laser()
+        self.main_thread()
+        for audiofile in audiofiles:
+            try:
+                audiofile.stop()
+            except:
+                KeyboardInterrupt
+        audiofiles[0].play()
+    
+    def option1_callback(instance):
+        self.stop_laser()
+        self.main_thread()
+        for audiofile in audiofiles:
+            try:
+                audiofile.stop()
+            except:
+                KeyboardInterrupt
+        audiofiles[1].play()
+    def option2_callback(instance):
+        self.stop_laser()
+        self.main_thread()
+        for audiofile in audiofiles:
+            try:
+                audiofile.stop()
+            except:
+                KeyboardInterrupt
+        audiofiles[2].play()
+    def option3_callback(instance):
+        self.stop_laser()
+        self.main_thread()
+        for audiofile in audiofiles:
+            try:
+                audiofile.stop()
+            except:
+                KeyboardInterrupt
+        audiofiles[3].play()
         
-        
-        # add segments below
-        
-        def OffSwitch_callback(instance):
-            App.get_running_app().stop()
-        OffSwitch = Button(text="Off",size_hint=(.2, .2), pos_hint={'center_x': .15, 'center_y': .35},font_size='25sp')
-        OffSwitch.bind(on_press=OffSwitch_callback)
-        self.add_widget(OffSwitch)
-        '''
+    main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
+    main_presentation.bind(on_press=main_presentation_callback)
+    add_widget(main_presentation)
+    
+    option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
+    option1.bind(on_press=option1_callback)
+    self.add_widget(option1)
+
+    option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
+    option2.bind(on_press=option2_callback)
+    self.add_widget(option2)
+   
+    option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
+    option3.bind(on_press=option3_callback)
+    add_widget(option3)
+
+    
 
 class MuralApp(App):
     '''
