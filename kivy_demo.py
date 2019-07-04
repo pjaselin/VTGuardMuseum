@@ -13,8 +13,8 @@ import subprocess, threading, multiprocessing
 import pygame, pigpio
 from math import copysign
 import traceback
-#from datetime import datetime
 import threading
+
 # kivy library imports
 from kivy.app import App
 from kivy.graphics import Color, Rectangle, Line
@@ -105,10 +105,6 @@ timestamps_option3 = [13, 24, 36, 51, 65, 75, 87, 102, 115, 130, 142, 154, 169, 
 class RootWidget(FloatLayout):
     X_coord = NumericProperty(initial_x)
     Y_coord = NumericProperty(initial_y)
-    #X_next = NumericProperty(0)
-    #Y_next = NumericProperty(0)
-    
-    first_run = True
     stop_playing = False
     
     def __init__(self, **kwargs):
@@ -139,10 +135,7 @@ class RootWidget(FloatLayout):
             location to target x,y location. This is to reduce the noise
             produced by servo movement.
         '''
-        # copy of current coordinates
-        #position_x = current_x
-        #position_y = current_y
-        #print("target:", TARGET_X, TARGET_Y)
+
         # get delta between target and current positions
         delta_x = TARGET_X - self.X_coord
         delta_y = TARGET_Y - self.Y_coord
@@ -163,7 +156,6 @@ class RootWidget(FloatLayout):
                 time.sleep(servo_pause)
                 servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
                 time.sleep(servo_pause)
-            #print("temp x:", position_x, "temp y:", position_y)
     
             # update deltas
             delta_x = TARGET_X - self.X_coord
@@ -182,8 +174,7 @@ class RootWidget(FloatLayout):
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
     
-        # return new positions
-        #return position_x, position_y
+
     def step_time_control(self, input_coords, input_timestamps):
         # loop through coords at timestamps
         first_timestamp = time.time()
@@ -216,43 +207,28 @@ class RootWidget(FloatLayout):
         self.stop_laser()
         self.laser_thread(coordinates_main, timestamps_main)
         for audiofile in audiofiles:
-            try:
-                audiofile.stop()
-            except:
-                KeyboardInterrupt
+            audiofile.stop()
         audiofiles[0].play()
     
     def option1_callback(self, instance):
         self.stop_laser()
         self.laser_thread(coordinates_option1, timestamps_option1)
         for audiofile in audiofiles:
-            try:
-                audiofile.stop()
-            except:
-                KeyboardInterrupt
+            audiofile.stop()
         audiofiles[1].play()
     def option2_callback(self, instance):
         self.stop_laser()
         self.laser_thread(coordinates_option2, timestamps_option2)
         for audiofile in audiofiles:
-            try:
-                audiofile.stop()
-            except:
-                KeyboardInterrupt
+            audiofile.stop()
         audiofiles[2].play()
     def option3_callback(self, instance):
         self.stop_laser()
         self.laser_thread(coordinates_option3, timestamps_option3)
         for audiofile in audiofiles:
-            try:
-                audiofile.stop()
-            except:
-                KeyboardInterrupt
+            audiofile.stop()
         audiofiles[3].play()
-        
-    
-
-    
+         
 
 class MuralApp(App):
     '''
