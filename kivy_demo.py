@@ -113,6 +113,21 @@ class RootWidget(FloatLayout):
     
     def __init__(self, **kwargs):
         super(RootWidget, self).__init__(**kwargs)
+        main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
+        main_presentation.bind(on_press=self.main_presentation_callback)
+        self.add_widget(main_presentation)
+    
+        option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
+        option1.bind(on_press=self.option1_callback)
+        self.add_widget(option1)
+    
+        option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
+        option2.bind(on_press=self.option2_callback)
+        self.add_widget(option2)
+   
+        option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
+        option3.bind(on_press=self.option3_callback)
+        self.add_widget(option3)
         
     def servo_stepper(self, TARGET_X, TARGET_Y):
         '''
@@ -169,7 +184,7 @@ class RootWidget(FloatLayout):
     
         # return new positions
         #return position_x, position_y
-    def example_callback(self, input_coords, input_timestamps):
+    def step_time_control(self, input_coords, input_timestamps):
         # loop through coords at timestamps
         first_timestamp = time.time()
         for i_coords in range(len(input_coords)):
@@ -183,34 +198,23 @@ class RootWidget(FloatLayout):
             servo_stepper(input_coords[i_coords][0], input_coords[i_coords][1])
             GPIO.output(GPIO_LASER, 1)
     
-    def main_thread(self):
+    def laser_thread(self, coordinate_list, timestamp_list):
         self.stop_playing = False
         self.thread = threading.Thread(target = self.step_time_control,
-                                       args = (coordinates_main, timestamps_main))
-        self.thread.start()
-    def option1_thread(self):
-        self.stop_playing = False
-        self.thread = threading.Thread(target = self.step_time_control,
-                                       args = (coordinates_option1, timestamps_option1))
-        self.thread.start()
-    def option2_thread(self):
-        self.stop_playing = False
-        self.thread = threading.Thread(target = self.step_time_control,
-                                       args = (coordinates_option2, timestamps_option2))
-        self.thread.start()
-    def option3_thread(self):
-        self.stop_playing = False
-        self.thread = threading.Thread(target = self.step_time_control,
-                                       args = (coordinates_option3, timestamps_option3))
-        self.thread.start()
+                                       args = (coordinate_list, timestamp_list))
+    
+
     def stop_laser(self):
         self.stop_playing = True
-        self.thrad.join()
+        try:
+            self.thread.join()
+        except:
+            AttributeError
         GPIO.output(GPIO_LASER, 0)
                 
-    def main_presentation_callback(instance):
+    def main_presentation_callback(self, instance):
         self.stop_laser()
-        self.main_thread()
+        self.laser_thread(coordinates_main, timestamps_main)
         for audiofile in audiofiles:
             try:
                 audiofile.stop()
@@ -218,27 +222,27 @@ class RootWidget(FloatLayout):
                 KeyboardInterrupt
         audiofiles[0].play()
     
-    def option1_callback(instance):
+    def option1_callback(self, instance):
         self.stop_laser()
-        self.main_thread()
+        self.laser_thread(coordinates_option1, timestamps_option1)
         for audiofile in audiofiles:
             try:
                 audiofile.stop()
             except:
                 KeyboardInterrupt
         audiofiles[1].play()
-    def option2_callback(instance):
+    def option2_callback(self, instance):
         self.stop_laser()
-        self.main_thread()
+        self.laser_thread(coordinates_option2, timestamps_option2)
         for audiofile in audiofiles:
             try:
                 audiofile.stop()
             except:
                 KeyboardInterrupt
         audiofiles[2].play()
-    def option3_callback(instance):
+    def option3_callback(self, instance):
         self.stop_laser()
-        self.main_thread()
+        self.laser_thread(coordinates_option3, timestamps_option3)
         for audiofile in audiofiles:
             try:
                 audiofile.stop()
@@ -246,21 +250,7 @@ class RootWidget(FloatLayout):
                 KeyboardInterrupt
         audiofiles[3].play()
         
-    main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
-    main_presentation.bind(on_press=main_presentation_callback)
-    add_widget(main_presentation)
     
-    option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
-    option1.bind(on_press=option1_callback)
-    self.add_widget(option1)
-
-    option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
-    option2.bind(on_press=option2_callback)
-    self.add_widget(option2)
-   
-    option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
-    option3.bind(on_press=option3_callback)
-    add_widget(option3)
 
     
 
@@ -294,10 +284,13 @@ if __name__ == '__main__':
     
     except KeyboardInterrupt:
         # stop audio
-        full_audio.stop()
+        for audiofile in audiofiles:
+            try:
+                audiofile.stop()
+            except:
+                KeyboardInterrupt
         
         # reset and zero pwm
-        current_x, current_y = servo_stepper(initial_x, initial_y)
         time.sleep(0.1)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
