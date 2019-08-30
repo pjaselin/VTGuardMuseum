@@ -9,11 +9,10 @@ Beyond the specific needs of the museum, the codes created here can be easily re
  - Plays audio files
  - Moves the servo HAT
  - Turns on/off the laser
- - Laser/audio sequenced
+ - Laser/audio sequenced together
 
 ## Tasks
 As this is still in development, there are several key issues that need to be resolved. Chief among these is the desire to be able to terminate a sequence at any time. To achieve this, an audio file needs to be launched and terminated in a thread.
-
  - thread management via threading.Threading
 
 ## Notes
