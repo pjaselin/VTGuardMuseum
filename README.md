@@ -10,8 +10,15 @@ Beyond the specific needs of the museum, the codes created here can be easily re
  - Moves the servo HAT
  - Turns on/off the laser
  - Laser/audio sequenced together
+ - Current sequence can be terminated and a new one can be started (stop one audio/laser movement and start another)
 
-## Tasks
+## Technologies Involved
+ - Kivy (https://kivy.org/#home): framework for developing interactive applications in Python
+ - RPi.GPIO: control of Raspberry Pi pins via GPIO for servos and laser
+ - pygame: control audio files
+ - threading: enables laser/servo to be sequenced to audio files
+ - pigpio: control servo movement
+
 As this is still in development, there are several key issues that need to be resolved. Chief among these is the desire to be able to terminate a sequence at any time. To achieve this, an audio file needs to be launched and terminated in a thread.
  - thread management via threading.Threading
 
@@ -27,7 +34,7 @@ As this is still in development, there are several key issues that need to be re
  - Enter this directory: cd development
  - Clone repository: git clone https://github.com/pjaselin/VTGuardMuseum.git
  - Enter cloned repo: cd VTGuardMuseum
- - Run Kivy app with: python3 kivy_demo.py
+ - Run Kivy app with: python3 kivy_museum_app.py
  - Terminate app with: CTRL+c
 
 ## For Raspberry Pi
