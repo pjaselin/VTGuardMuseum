@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__status__ = "Testing"
+__status__ = "Development"
 
 # necessary library imports
 import os, sys
@@ -14,12 +14,9 @@ import pygame, pigpio
 from math import copysign
 import traceback
 import threading
-from functools import partial
-import serial
 
 # kivy library imports
 from kivy.app import App
-from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -49,6 +46,7 @@ servo_pause = 0.01
 # GPIO setup
 GPIO.setmode(GPIO.BCM) # set pin numbering
 GPIO.setup(GPIO_LASER, GPIO.OUT) # laser control setup
+#GPIO.setup(GPIO_START_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_UP) # play button setup
 
 # start pygame to play audio files
 pygame.init()
@@ -95,18 +93,16 @@ timestamps_option1 = [13, 23, 36, 51, 63, 75, 90, 105, 118, 133, 143, 155, 169, 
 
 # Option 2
 coordinates_option2 = [(1231, 870), (814, 761), (1177, 659), (673, 710), (834, 640), (900, 625), (1388, 895), (1353, 738), (765, 577), (1216, 778), (611, 852), (770, 606), (1189, 721), (688, 900), (927, 702), (902, 706), (730, 670), (842, 725), (759, 815), (629, 711)]
-timestamps_option2 = [5, 20, 30, 41, 56, 66, 80, 90, 105, 116, 129, 140, 154, 169, 182, 197, 210, 224, 236, 249]
+timestamps_option2 = [10, 20, 30, 41, 56, 66, 80, 90, 105, 116, 129, 140, 154, 169, 182, 197, 210, 224, 236, 249]
 
 # Option 3
 coordinates_option3 = [(853, 758), (607, 750), (704, 693), (1269, 592), (1136, 743), (1281, 839), (1042, 631), (1243, 667), (1186, 645), (866, 740), (1338, 765), (751, 664), (1066, 760), (1145, 582), (726, 896), (935, 816), (939, 851), (1136, 674), (1280, 550), (776, 895)]
-timestamps_option3 = [3, 24, 36, 51, 65, 75, 87, 102, 115, 130, 142, 154, 169, 183, 193, 208, 222, 232, 244, 255]
+timestamps_option3 = [13, 24, 36, 51, 65, 75, 87, 102, 115, 130, 142, 154, 169, 183, 193, 208, 222, 232, 244, 255]
 ###########################
 
 
 class RootWidget(FloatLayout):
     '''
-    Main class for defining app layout and button functionality. Below we define the iniital X and Y coordinates and set
-    the stop playing flag to False.
     '''
     X_coord = NumericProperty(initial_x)
     Y_coord = NumericProperty(initial_y)
@@ -114,36 +110,26 @@ class RootWidget(FloatLayout):
     
     def __init__(self, **kwargs):
         '''
-        Here we define the buttons, their locations, and callbacks. Buttons can easily be added or these modified as necessary as the code is extremely generalized.
-        To do this, one must define the coordinate list, the corresponding timestamps in seconds when the laser should point in that direction, and the audio list
-        entry (ID). N.B. Python indexing starts at 0.
         '''
         super(RootWidget, self).__init__(**kwargs)
         main_presentation = Button(text="Main\nPresentation", halign='center', size_hint=(.35, .85), pos_hint={'center_x': .25, 'center_y': .5},font_size='25sp')
-        main_presentation.bind(on_press = partial(self.button_callback, coord_list = coordinates_main, timestamp_list = timestamps_main, audio_id = 0))
+        main_presentation.bind(on_press=self.button_callback(coordinates_main, timestamps_main, 0))
         self.add_widget(main_presentation)
     
         option1 = Button(text="Option 1",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .8},font_size='25sp')
-        option1.bind(on_press = partial(self.button_callback, coord_list = coordinates_option1, timestamp_list = timestamps_option1, audio_id = 1))
+        option1.bind(on_press=self.button_callback(coordinates_option1, timestamps_option1, 1))
         self.add_widget(option1)
     
         option2 = Button(text="Option 2",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .5},font_size='25sp')
-        option2.bind(on_press = partial(self.button_callback, coord_list = coordinates_option2, timestamp_list = timestamps_option2, audio_id = 2))
+        option2.bind(on_press=self.button_callback(coordinates_option2, timestamps_option2, 2))
         self.add_widget(option2)
    
         option3 = Button(text="Option 3",size_hint=(.25, .25), pos_hint={'center_x': .7, 'center_y': .2},font_size='25sp')
-        option3.bind(on_press = partial(self.button_callback, coord_list = coordinates_option3, timestamp_list = timestamps_option3, audio_id = 3))
+        option3.bind(on_press=self.button_callback(coordinates_option3, timestamps_option3, 3))
         self.add_widget(option3)
-        
-        shutdown = Button(text="Shutdown",size_hint=(.1, .1), pos_hint={'center_x': .9, 'center_y': .12},font_size='25sp')
-        shutdown.bind(on_press = self.shutdown_callback)
-        self.add_widget(shutdown)
         
     def servo_stepper(self, TARGET_X, TARGET_Y):
         '''
-        Method to handle the movement of the servos from current to target coordinates. The purpose of discretizing the laser movement
-        is to minimize noise from the servos.
-        
         Input:
             TARGET_X: target pulsewidth x-axis
             TARGET_Y: target pulsewidth y-axis
@@ -152,25 +138,19 @@ class RootWidget(FloatLayout):
             location to target x,y location. This is to reduce the noise
             produced by servo movement.
         '''
+
         # get delta between target and current positions
         delta_x = TARGET_X - self.X_coord
         delta_y = TARGET_Y - self.Y_coord
-        # loop to step from current to target positions and stop if stop_playing is True
+        # loop to step from current to target positions
         while abs(delta_x) > servo_step_length or abs(delta_y) > servo_step_length or self.stop_playing:
-            # is the loop passed because stop_playing is True, leave the loop
             if self.stop_playing:
                 return
-            # else update the x and y coordinates with brief delay to allow the movement to be executed. 
             if abs(delta_x) > servo_step_length:
-                # update coordinates in code
                 self.X_coord += copysign(servo_step_length, delta_x)
-                # send command to servo pin
                 servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
-                # brief pause
                 time.sleep(servo_pause)
-                # tell the servo pin to stop (minimizes jittering)
                 servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
-                # brief pause
                 time.sleep(servo_pause)
 
             if abs(delta_y) > servo_step_length:
@@ -183,43 +163,39 @@ class RootWidget(FloatLayout):
             # update deltas
             delta_x = TARGET_X - self.X_coord
             delta_y = TARGET_Y - self.Y_coord
-            # brief pause
+        
+            # very brief pause
             time.sleep(servo_pause)
     
-        # when close enough (as per the while loop criterion), take remainder step
+        # when close enough, take remainder step
         self.X_coord += delta_x
         self.Y_coord += delta_y
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, self.X_coord)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, self.Y_coord)
+    
         # zero pwm's
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_Y, 0)
     
+
     def step_time_control(self, input_coords, input_timestamps):
         '''
-        This method is the one to be opened on a thread as it directs when to move the laser based on the input timestamps.
         '''
-        # get current timestamp
+        # loop through coords at timestamps
         first_timestamp = time.time()
-        # loop through coordinate list
         for i_coords in range(len(input_coords)):
-            # continue only when the clock reaches the current target timestamp or if the stop_playing is True
             while int(time.time()) - first_timestamp < input_timestamps[i_coords] or self.stop_playing:
-                # if sel_playing is True end the function and the thread
                 if self.stop_playing:
                     return
-                # continue to wait until we reach the target time
+                # wait until we reach the target time
                 time.sleep(0.1)
-            # then turn off the laser if it isn't already on
+            # then move the laser
             GPIO.output(GPIO_LASER, 0)
-            # take next movement
             self.servo_stepper(input_coords[i_coords][0], input_coords[i_coords][1])
-            # turn laser on
             GPIO.output(GPIO_LASER, 1)
     
     def laser_thread(self, coordinate_list, timestamp_list):
         '''
-        Method to launch thread for laser/servo sequence.
         '''
         # at start set stop_playing to False to allow the thread to run
         # as this may be True from a prior interruption
@@ -227,32 +203,27 @@ class RootWidget(FloatLayout):
         # launch thread with coordinate and timestamp arguments
         self.thread = threading.Thread(target = self.step_time_control,
                                        args = (coordinate_list, timestamp_list))
-        # start thread
-        self.thread.start()
     
+
     def stop_laser(self):
         '''
-        Method to terminate thread if running.
         '''
         # set stop_playing flag to True to trigger stopping in thread
         self.stop_playing = True
-        # terminate thread unless the thread doesn't exist
+        # terminate thread unless thread doesn't exist
         try:
             self.thread.join()
-            self.thread.terminate()
-            del(self.thread)
         except:
             AttributeError
         # turn laser off
         GPIO.output(GPIO_LASER, 0)
                 
-    def button_callback(self, instance, coord_list, timestamp_list, audio_id):
+    def button_callback(self, coord_list, timestamp_list, audio_id):
         '''
-        Method to define button callback behavior.
         '''
         # stop servo/laser sequence
         self.stop_laser()
-        # stop audio by stopping all available audio files
+        # stop audio
         for audiofile in audiofiles:
             audiofile.stop()
         # start new servo/laser sequence with a pause before playing
@@ -261,34 +232,46 @@ class RootWidget(FloatLayout):
         # play selected audio file
         audiofiles[audio_id].play()
     
-    def shutdown_callback(self, obj):
+    def shutdown_callback(self):
         '''
-        Stop button and close window callback
+        stop script and shutdown app
+        need executable start from homescreen
         '''
-        # terminate laster sequence
+        subprocess.call("sudo pigpiod &", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    '''
+    def main_presentation_callback(self, instance):
         self.stop_laser()
-        time.sleep(1)
-        # stop app
-        App.get_running_app().stop()
-        # close window
-        Window.close()
+        self.laser_thread(coordinates_main, timestamps_main)
+        for audiofile in audiofiles:
+            audiofile.stop()
+        audiofiles[0].play()
+    
+    def option1_callback(self, instance):
+        self.stop_laser()
+        self.laser_thread(coordinates_option1, timestamps_option1)
+        for audiofile in audiofiles:
+            audiofile.stop()
+        audiofiles[1].play()
+    def option2_callback(self, instance):
+        self.stop_laser()
+        self.laser_thread(coordinates_option2, timestamps_option2)
+        for audiofile in audiofiles:
+            audiofile.stop()
+        audiofiles[2].play()
+    def option3_callback(self, instance):
+        self.stop_laser()
+        self.laser_thread(coordinates_option3, timestamps_option3)
+        for audiofile in audiofiles:
+            audiofile.stop()
+        audiofiles[3].play()
+    '''
          
 
 class MuralApp(App):
     '''
     Final application assembly into a Kivy App class
     '''
-    def on_stop(self):
-        # if the shutdown button was called, do the following to shutdown and clean up
-        # stop audio
-        for audiofile in audiofiles:
-            audiofile.stop() 
-        # stop pigpio
-        servo.stop()
-        time.sleep(0.1)
-        # end GPIO
-        GPIO.cleanup()
-        
     def build(self):
         self.root = root = RootWidget()
         root.bind(size=self._update_rect, pos=self._update_rect)
@@ -307,14 +290,12 @@ if __name__ == '__main__':
     # if running this file as main start the app
     try:
         MuralApp().run()
-        # only uncomment the following line for full shutdown functionality
-        #subprocess.call("sudo shutdown now", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     except KeyboardInterrupt:
-        # if a keyboard command was used to terminate the app, do the following to clean up
         # stop audio
         for audiofile in audiofiles:
             audiofile.stop()
+        
         # reset and zero pwm
         time.sleep(0.1)
         servo.set_servo_pulsewidth(GPIO_SERVOPIN_X, 0)
@@ -327,3 +308,4 @@ if __name__ == '__main__':
         GPIO.output(GPIO_LASER, 0)
         time.sleep(0.1)
         # end GPIO
+        GPIO.cleanup()
