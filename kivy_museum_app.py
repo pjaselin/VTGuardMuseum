@@ -135,7 +135,7 @@ class RootWidget(FloatLayout):
         option3.bind(on_press = partial(self.button_callback, coord_list = coordinates_option3, timestamp_list = timestamps_option3, audio_id = 3))
         self.add_widget(option3)
         
-        shutdown = Button(text="Shutdown",size_hint=(.1, .1), pos_hint={'center_x': .9, 'center_y': .1},font_size='25sp')
+        shutdown = Button(text="Shutdown",size_hint=(.1, .1), pos_hint={'center_x': .9, 'center_y': .12},font_size='25sp')
         shutdown.bind(on_press = self.shutdown_callback)
         self.add_widget(shutdown)
         

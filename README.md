@@ -1,6 +1,8 @@
 # VTGuardMuseum
 This repository primarily serves to store and share scripts as we develop interactive displays for the VT National Guard Museum: http://vt.public.ng.mil/Museum/. 
 
+![screenshot of app](/markdown/app_screenshot.png)
+
 ## Work Product
 Beyond the specific needs of the museum, the codes created here can be easily repurposed for a multitude of other applications where one would like to build a Kivy app in Python to control hardware and software on/from a Raspberry Pi. Here the app controls a Pan-Tilt HAT (https://www.adafruit.com/product/3353) to which is mounted a red laser diode (https://www.adafruit.com/product/1054). Museum guests control the app through the official Raspberry Pi touchscreen (https://www.amazon.com/Raspberry-Pi-7-Touchscreen-Display/dp/B0153R2A9I). Yes, there are many wires connected to the Pi and yes it still works! Note that the power leads for the two servos had to be soldered together into a single lead, sharing one 5V pin. The other 5V pin had to be dedicated to the touchscreen and the laser required on 3V pin. An astute observer may note this is basically a glorified laser cat toy, but it does the job!
 
