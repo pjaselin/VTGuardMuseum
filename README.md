@@ -21,9 +21,6 @@ Beyond the specific needs of the museum, the codes created here can be easily re
  - threading: enables laser/servo to be sequenced to audio files
  - pigpio: control servo movement
 
-As this is still in development, there are several key issues that need to be resolved. Chief among these is the desire to be able to terminate a sequence at any time. To achieve this, an audio file needs to be launched and terminated in a thread.
- - thread management via threading.Threading
-
 ## Notes
  - audio files are loaded into memory with pygame, but it might be better to use subprocess calls
  - move servo_stepper to class for easier storage of current position
@@ -38,6 +35,9 @@ As this is still in development, there are several key issues that need to be re
  - Enter cloned repo: cd VTGuardMuseum
  - Run Kivy app with: python3 kivy_museum_app.py
  - Terminate app with: CTRL+c
+ 
+## To do:
+ - write instructions to make app executable
 
 ## For Raspberry Pi
 Please be sure to also make the edits noted at the bottom of this page to use the RPi touchscreen with this Kivy app:
