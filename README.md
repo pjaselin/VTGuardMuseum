@@ -4,7 +4,7 @@ This repository serves to store and share scripts as we develop interactive disp
 ![screenshot of app](/markdown/app_screenshot.jpeg)
 
 ## Work Product
-The primary objective of this project was to develop an interactive display for [The Great War Painting of Sheridan's Ride](https://www.burlingtonfreepress.com/story/news/2016/05/30/camp-johnson-museum-spotlights-military-history/85131380/). Considering the hefty price tag to contract businesses or use turnkey solutions, it was of particular interest to develop a low-cost system. Of course, the Raspberry Pi is an ideal platform for such a project. This is confirmed as the project cost a total of ~$130.
+The primary objective of this project was to develop an interactive display for [The Great War Painting of Sheridan's Ride](https://www.burlingtonfreepress.com/story/news/2016/05/30/camp-johnson-museum-spotlights-military-history/85131380/). Considering the hefty expenses of contracting other businesses or to use turnkey solutions, it was of particular interest to develop a low-cost system. The Raspberry Pi proved to be an ideal platform for such a project with a total cost of ~$130.
 
 This mixed-media display was developed on a Raspberry Pi to which was connected a [Pan-Tilt HAT](https://www.adafruit.com/product/3353), a [red laser diode](https://www.adafruit.com/product/1054), and an official [Raspberry Pi touchscreen](https://www.amazon.com/Raspberry-Pi-7-Touchscreen-Display/dp/B0153R2A9I). Yes, there are many wires connected to the Pi and yes it still works! Note that the power leads for the two servos had to be soldered together into a single lead, thus sharing one 5V pin. The other 5V pin had to be dedicated to the touchscreen. The laser required one of the 3V pins.
 
