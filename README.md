@@ -29,8 +29,6 @@ With the hardware connected, an interactive app was written in the Python-Kivy f
 
 ## How to Run Kivy App:
  - SSH into RPi via second computer.
- - Create a new directory (not necessary): mkdir development
- - Enter this directory: cd development
  - Clone repository: git clone https://github.com/pjaselin/VTGuardMuseum.git
  - Enter cloned repo: cd VTGuardMuseum
  - Run Kivy app with: python3 kivy_museum_app.py
@@ -63,9 +61,9 @@ and paste the following into the file, editing the filepaths accordingly:
 Version=1.0
 Name=Presentation
 Comment=Shorcut to launch Python-Kivy app
-Exec=<path to repo>/VTGuardMuseum/kivy_museum_app.py
-Icon=<path to repo>/VTGuardMuseum/markdown/icon.jpg
-Path=<path to repo>/VTGuardMuseum
+Exec=/home/pi/VTGuardMuseum/kivy_museum_app.py
+Icon=/home/pi/VTGuardMuseum/markdown/icon.jpg
+Path=/home/pi/VTGuardMuseum
 Terminal=false
 Type=Application
 Categories=Utility;Application;
@@ -81,9 +79,9 @@ and paste the following into the file, editing the filepaths accordingly:
 Version=1.0
 Name=Shutdown
 Comment=Shorcut to shutdown RPi
-Exec=<path to repo>/VTGuardMuseum/rpi_shutdown.py
-Icon=<path to repo>/VTGuardMuseum/markdown/shutdown_icon.png
-Path=<path to repo>/VTGuardMuseum
+Exec=/home/pi/VTGuardMuseum/rpi_shutdown.py
+Icon=/home/pi/VTGuardMuseum/markdown/shutdown_icon.png
+Path=/home/pi/VTGuardMuseum
 Terminal=false
 Type=Application
 Categories=Utility;Application;
