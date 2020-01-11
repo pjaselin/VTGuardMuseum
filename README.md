@@ -28,16 +28,16 @@ With the hardware connected, an interactive app was written in the Python-Kivy f
  - pigpio: control servo movement
  
 ## Repository Structure
-├── VTGuardMuseum/
-│   ├── audiofiles/
-│   │   ├── sample audio files used for development
-├── development_scripts/
-│   │   ├── scripts used in developing the final code
-├── markdown/
-│   │   ├── images used in app and README
-├── kivy_museum_app.py: final app and deliverable
-├── rpi_shutdown.py: script that will shutdown the RPi when run
-├── README.md
+├── VTGuardMuseum/  
+│   ├── audiofiles/  
+│   │   ├── sample audio files used for development  
+├── development_scripts/  
+│   │   ├── scripts used in developing the final code  
+├── markdown/  
+│   │   ├── images used in app and README  
+├── kivy_museum_app.py: final app and deliverable  
+├── rpi_shutdown.py: script that will shutdown the RPi when run  
+├── README.md  
 
 
 ## How to Run Kivy App:
