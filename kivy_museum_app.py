@@ -307,6 +307,8 @@ if __name__ == '__main__':
     # if running this file as main start the app
     try:
         MuralApp().run()
+        # only uncomment the following line for full shutdown functionality
+        #subprocess.call("sudo shutdown now", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     except KeyboardInterrupt:
         # if a keyboard command was used to terminate the app, do the following to clean up
